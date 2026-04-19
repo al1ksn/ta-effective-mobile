@@ -1,5 +1,7 @@
 # Subscriptions Management Service
 
+> [English](README.md) | [Русский](README.ru.md)
+
 REST API service for managing user subscriptions, built with Go.
 
 ## Features
