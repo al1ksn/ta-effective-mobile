@@ -129,3 +129,21 @@ func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error
     }
     return nil
 }
+
+func (r *SubscriptionRepository) TotalCost(ctx context.Context, from, to time.Time, userID *uuid.UUID, serviceName *string) (int, error) {
+    query := `
+        SELECT COALESCE(SUM(price), 0)
+        FROM subscriptions
+        WHERE start_date <= $2
+          AND (end_date IS NULL OR end_date >= $1)
+          AND ($3::uuid IS NULL OR user_id = $3)
+          AND ($4::varchar IS NULL OR service_name = $4)`
+
+    var total int
+    err := r.db.QueryRow(ctx, query, from, to, userID, serviceName).Scan(&total)
+    if err != nil {
+        return 0, fmt.Errorf("total cost: %w", err)
+    }
+
+    return total, nil
+}
