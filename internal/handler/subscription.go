@@ -137,3 +137,18 @@ func (h *SubscriptionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
     w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *SubscriptionHandler) List(w http.ResponseWriter, r *http.Request) {
+    subs, err := h.repo.List(r.Context())
+    if err != nil {
+        h.log.Error("list subscriptions", "error", err)
+        h.respondError(w, http.StatusInternalServerError, "failed to list subscriptions")
+        return
+    }
+
+    if subs == nil {
+        subs = []*model.Subscription{}
+    }
+
+    h.respondJSON(w, http.StatusOK, subs)
+}
