@@ -116,3 +116,16 @@ func (r *SubscriptionRepository) Update(ctx context.Context, id uuid.UUID, req *
 
     return &sub, nil
 }
+
+func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error {
+    query := `DELETE FROM subscriptions WHERE id = $1`
+    
+    res, err := r.db.Exec(ctx, query, id)
+    if err != nil {
+        return fmt.Errorf("delete subscription: %w", err)
+    }
+    if res.RowsAffected() == 0 {
+        return fmt.Errorf("subscription not found")
+    }
+    return nil
+}
