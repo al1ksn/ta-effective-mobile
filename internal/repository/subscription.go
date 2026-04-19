@@ -6,6 +6,7 @@ import (
 
 	"ta-effective-mobile/internal/model"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -37,4 +38,22 @@ func (r *SubscriptionRepository) Create(ctx context.Context, sub *model.Subscrip
 	}
 
 	return &result, nil
+}
+
+func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Subscription, error) {
+    query := `
+        SELECT id, service_name, price, user_id, start_date, end_date, created_at, updated_at
+        FROM subscriptions WHERE id = $1`
+
+    row := r.db.QueryRow(ctx, query, id)
+
+    var sub model.Subscription
+    if err := row.Scan(
+        &sub.ID, &sub.ServiceName, &sub.Price, &sub.UserID,
+        &sub.StartDate, &sub.EndDate, &sub.CreatedAt, &sub.UpdatedAt,
+    ); err != nil {
+        return nil, fmt.Errorf("get subscription by id: %w", err)
+    }
+
+    return &sub, nil
 }
