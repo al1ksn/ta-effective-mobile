@@ -121,3 +121,19 @@ func (h *SubscriptionHandler) Update(w http.ResponseWriter, r *http.Request) {
 
     h.respondJSON(w, http.StatusOK, updated)
 }
+
+func (h *SubscriptionHandler) Delete(w http.ResponseWriter, r *http.Request) {
+    id, err := uuid.Parse(chi.URLParam(r, "id"))
+    if err != nil {
+        h.respondError(w, http.StatusBadRequest, "invalid id")
+        return
+    }
+
+    if err := h.repo.Delete(r.Context(), id); err != nil {
+        h.log.Error("delete subscription", "id", id, "error", err)
+        h.respondError(w, http.StatusInternalServerError, "failed to delete subscription")
+        return
+    }
+
+    w.WriteHeader(http.StatusNoContent)
+}
