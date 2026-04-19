@@ -152,3 +152,53 @@ func (h *SubscriptionHandler) List(w http.ResponseWriter, r *http.Request) {
 
     h.respondJSON(w, http.StatusOK, subs)
 }
+
+func (h *SubscriptionHandler) TotalCost(w http.ResponseWriter, r *http.Request) {
+    fromStr := r.URL.Query().Get("from")
+    toStr := r.URL.Query().Get("to")
+
+    from := time.Time{}
+    to := time.Now()
+
+    if fromStr != "" {
+        t, err := time.Parse("01-2006", fromStr)
+        if err != nil {
+            h.respondError(w, http.StatusBadRequest, "invalid from format, expected MM-YYYY")
+            return
+        }
+        from = t
+    }
+
+    if toStr != "" {
+        t, err := time.Parse("01-2006", toStr)
+        if err != nil {
+            h.respondError(w, http.StatusBadRequest, "invalid to format, expected MM-YYYY")
+            return
+        }
+        to = t
+    }
+
+    var userID *uuid.UUID
+    if uid := r.URL.Query().Get("user_id"); uid != "" {
+        parsed, err := uuid.Parse(uid)
+        if err != nil {
+            h.respondError(w, http.StatusBadRequest, "invalid user_id format")
+            return
+        }
+        userID = &parsed
+    }
+
+    var serviceName *string
+    if sn := r.URL.Query().Get("service_name"); sn != "" {
+        serviceName = &sn
+    }
+
+    total, err := h.repo.TotalCost(r.Context(), from, to, userID, serviceName)
+    if err != nil {
+        h.log.Error("total cost", "error", err)
+        h.respondError(w, http.StatusInternalServerError, "failed to calculate total cost")
+        return
+    }
+
+    h.respondJSON(w, http.StatusOK, model.TotalCostResponse{Total: total})
+}
