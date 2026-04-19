@@ -86,7 +86,7 @@ func (h *SubscriptionHandler) GetById(w http.ResponseWriter, r *http.Request) {
     id, err := uuid.Parse(chi.URLParam(r, "id"))
     if err != nil {
         h.log.Error("get subscription", "id", id, "error", err)
-        h.respondError(w, http.StatusBadRequest, "Incorrect id")
+        h.respondError(w, http.StatusBadRequest, "invalid id")
         return
     }
 
@@ -98,4 +98,27 @@ func (h *SubscriptionHandler) GetById(w http.ResponseWriter, r *http.Request) {
     }
 
     h.respondJSON(w, http.StatusOK, sub)
+}
+
+func (h *SubscriptionHandler) Update(w http.ResponseWriter, r *http.Request) {
+    id, err := uuid.Parse(chi.URLParam(r, "id"))
+    if err != nil {
+        h.respondError(w, http.StatusBadRequest, "invalid id")
+        return
+    }
+
+    var req model.UpdateSubscriptionRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        h.respondError(w, http.StatusBadRequest, "invalid request body")
+        return
+    }
+
+    updated, err := h.repo.Update(r.Context(), id, &req)
+    if err != nil {
+        h.log.Error("update subscription", "id", id, "error", err)
+        h.respondError(w, http.StatusInternalServerError, "failed to update subscription")
+        return
+    }
+
+    h.respondJSON(w, http.StatusOK, updated)
 }
