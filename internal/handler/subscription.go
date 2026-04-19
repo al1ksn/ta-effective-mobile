@@ -85,7 +85,6 @@ func (h *SubscriptionHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *SubscriptionHandler) GetById(w http.ResponseWriter, r *http.Request) {
     id, err := uuid.Parse(chi.URLParam(r, "id"))
     if err != nil {
-        h.log.Error("get subscription", "id", id, "error", err)
         h.respondError(w, http.StatusBadRequest, "invalid id")
         return
     }
