@@ -1,0 +1,9 @@
+basePath: /api/v1
+host: localhost:8080
+info:
+  contact: {}
+  description: REST-сервис для управления подписками пользователей
+  title: Subscriptions Service API
+  version: "1.0"
+paths: {}
+swagger: "2.0"
