@@ -10,6 +10,7 @@ import (
 	"ta-effective-mobile/internal/repository"
 
 	"github.com/google/uuid"
+    "github.com/go-chi/chi/v5"
 )
 
 type SubscriptionHandler struct {
@@ -79,4 +80,22 @@ func (h *SubscriptionHandler) Create(w http.ResponseWriter, r *http.Request) {
     }
 
     h.respondJSON(w, http.StatusCreated, created)
+}
+
+func (h *SubscriptionHandler) GetById(w http.ResponseWriter, r *http.Request) {
+    id, err := uuid.Parse(chi.URLParam(r, "id"))
+    if err != nil {
+        h.log.Error("get subscription", "id", id, "error", err)
+        h.respondError(w, http.StatusBadRequest, "Incorrect id")
+        return
+    }
+
+    sub, err := h.repo.GetByID(r.Context(), id)
+    if err != nil {
+        h.log.Error("get subscription", "id", id, "error", err)
+        h.respondError(w, http.StatusNotFound, "resource not found")
+        return
+    }
+
+    h.respondJSON(w, http.StatusOK, sub)
 }
