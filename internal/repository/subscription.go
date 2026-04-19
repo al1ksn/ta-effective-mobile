@@ -57,3 +57,29 @@ func (r *SubscriptionRepository) GetByID(ctx context.Context, id uuid.UUID) (*mo
 
     return &sub, nil
 }
+
+func (r *SubscriptionRepository) List(ctx context.Context) ([]*model.Subscription, error) {
+    query := `
+        SELECT id, service_name, price, user_id, start_date, end_date, created_at, updated_at
+        FROM subscriptions ORDER BY created_at DESC`
+
+    rows, err := r.db.Query(ctx, query)
+    if err != nil {
+        return nil, fmt.Errorf("list subscriptions: %w", err)
+    }
+    defer rows.Close()
+
+    var subs []*model.Subscription
+    for rows.Next() {
+        var sub model.Subscription
+        if err := rows.Scan(
+            &sub.ID, &sub.ServiceName, &sub.Price, &sub.UserID,
+            &sub.StartDate, &sub.EndDate, &sub.CreatedAt, &sub.UpdatedAt,
+        ); err != nil {
+            return nil, fmt.Errorf("scan subscription: %w", err)
+        }
+        subs = append(subs, &sub)
+    }
+
+    return subs, nil
+}
