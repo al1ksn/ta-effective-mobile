@@ -32,6 +32,15 @@ func (h *SubscriptionHandler) respondError(w http.ResponseWriter, status int, ms
     h.respondJSON(w, status, map[string]string{"error": msg})
 }
 
+// @Summary      Создать подписку
+// @Tags         subscriptions
+// @Accept       json
+// @Produce      json
+// @Param        body body model.CreateSubscriptionRequest true "Данные подписки"
+// @Success      201 {object} model.Subscription
+// @Failure      400 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /subscriptions [post]
 func (h *SubscriptionHandler) Create(w http.ResponseWriter, r *http.Request) {
     var req model.CreateSubscriptionRequest
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -82,6 +91,14 @@ func (h *SubscriptionHandler) Create(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusCreated, created)
 }
 
+// @Summary      Получить подписку по ID
+// @Tags         subscriptions
+// @Produce      json
+// @Param        id path string true "UUID подписки"
+// @Success      200 {object} model.Subscription
+// @Failure      400 {object} map[string]string
+// @Failure      404 {object} map[string]string
+// @Router       /subscriptions/{id} [get]
 func (h *SubscriptionHandler) GetById(w http.ResponseWriter, r *http.Request) {
     id, err := uuid.Parse(chi.URLParam(r, "id"))
     if err != nil {
@@ -99,6 +116,16 @@ func (h *SubscriptionHandler) GetById(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, sub)
 }
 
+// @Summary      Обновить подписку
+// @Tags         subscriptions
+// @Accept       json
+// @Produce      json
+// @Param        id   path string                          true "UUID подписки"
+// @Param        body body model.UpdateSubscriptionRequest true "Поля для обновления"
+// @Success      200 {object} model.Subscription
+// @Failure      400 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /subscriptions/{id} [put]
 func (h *SubscriptionHandler) Update(w http.ResponseWriter, r *http.Request) {
     id, err := uuid.Parse(chi.URLParam(r, "id"))
     if err != nil {
@@ -122,6 +149,13 @@ func (h *SubscriptionHandler) Update(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, updated)
 }
 
+// @Summary      Удалить подписку
+// @Tags         subscriptions
+// @Param        id path string true "UUID подписки"
+// @Success      204
+// @Failure      400 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /subscriptions/{id} [delete]
 func (h *SubscriptionHandler) Delete(w http.ResponseWriter, r *http.Request) {
     id, err := uuid.Parse(chi.URLParam(r, "id"))
     if err != nil {
@@ -138,6 +172,12 @@ func (h *SubscriptionHandler) Delete(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusNoContent)
 }
 
+// @Summary      Список всех подписок
+// @Tags         subscriptions
+// @Produce      json
+// @Success      200 {array}  model.Subscription
+// @Failure      500 {object} map[string]string
+// @Router       /subscriptions [get]
 func (h *SubscriptionHandler) List(w http.ResponseWriter, r *http.Request) {
     subs, err := h.repo.List(r.Context())
     if err != nil {
@@ -153,6 +193,17 @@ func (h *SubscriptionHandler) List(w http.ResponseWriter, r *http.Request) {
     h.respondJSON(w, http.StatusOK, subs)
 }
 
+// @Summary      Суммарная стоимость подписок за период
+// @Tags         subscriptions
+// @Produce      json
+// @Param        from         query string false "Начало периода (MM-YYYY)"
+// @Param        to           query string false "Конец периода (MM-YYYY)"
+// @Param        user_id      query string false "Фильтр по user_id"
+// @Param        service_name query string false "Фильтр по названию сервиса"
+// @Success      200 {object} model.TotalCostResponse
+// @Failure      400 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /subscriptions/total [get]
 func (h *SubscriptionHandler) TotalCost(w http.ResponseWriter, r *http.Request) {
     fromStr := r.URL.Query().Get("from")
     toStr := r.URL.Query().Get("to")
